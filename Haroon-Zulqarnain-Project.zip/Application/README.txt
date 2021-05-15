@@ -1,0 +1,1 @@
+Db-Project1. Create the database using the file project_2_h1b.sql on MySqlWorkBench with the localhost:88882. PHP and SQL versions are same as what we used in the class.3. Add the application docs ÒProject 2Ó into the Htdocs of MAMP4. Go to Google Chrome and run localhost:8888/Project2/index.html to get the application

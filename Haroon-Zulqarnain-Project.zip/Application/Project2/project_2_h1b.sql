@@ -1,0 +1,684 @@
+-- Ammar Bin Zulqarnain, Abrar Haroon
+--  Project 2
+-- Dataset: https://www.kaggle.com/jonamjar/h1b-data-set-2017?select=H-1B_Disclosure_Data_FY17.csv
+
+DROP DATABASE IF EXISTS H1B2017;
+CREATE DATABASE H1B2017; 
+USE H1B2017;
+-- Creation of Mega table that contains the raw data
+DROP TABLE IF EXISTS mega_table;
+CREATE TABLE mega_table(
+CASE_ID INT UNSIGNED AUTO_INCREMENT, /* Covers max values */ 
+CASE_NUMBER VARCHAR(50), /*Varchar to save space */
+CASE_STATUS VARCHAR(30), /*Varchar to save space */
+CASE_SUBMITTED VARCHAR(50), /*Varchar to save space */
+DECISION_DATE VARCHAR(15)	, /*Varchar to save space */
+VISA_CLASS	VARCHAR(100), /*Varchar to save space */
+EMPLOYMENT_START_DATE VARCHAR(15)	, /*Varchar to save space */
+EMPLOYMENT_END_DATE	VARCHAR(15), /*Varchar to save space */
+EMPLOYER_NAME VARCHAR(750)	, /*Varchar to save space */
+EMPLOYER_BUSINESS_DBA VARCHAR(500)	, /*Varchar to save space */
+EMPLOYER_ADDRESS	VARCHAR(200), /*Varchar to save space */
+EMPLOYER_CITY	VARCHAR(50), /*Varchar to save space */
+EMPLOYER_STATE	VARCHAR(10), /*Varchar to save space */
+EMPLOYER_POSTAL_CODE VARCHAR(100)	, /*Varchar to save space */
+EMPLOYER_COUNTRY VARCHAR(50)	, /*Varchar to save space */
+EMPLOYER_PROVINCE VARCHAR(50)	, /*Varchar to save space */
+EMPLOYER_PHONE VARCHAR(75), /*Varchar to save space */
+EMPLOYER_PHONE_EXT VARCHAR(75)	, /*Varchar to save space */
+AGENT_REPRESENTING_EMPLOYER	VARCHAR(100), /*Varchar to save space */
+AGENT_ATTORNEY_NAME	VARCHAR(50), /*Varchar to save space */
+AGENT_ATTORNEY_CITY	VARCHAR(50), /*Varchar to save space */
+AGENT_ATTORNEY_STATE VARCHAR(100)	, /*Varchar to save space */
+JOB_TITLE	VARCHAR(500), /*Varchar to save space */
+SOC_CODE VARCHAR(50)	, /*Varchar to save space */
+SOC_NAME VARCHAR(75)	, /*Varchar to save space */
+NAICS_CODE VARCHAR(75), /*Varchar to save space */
+TOTAL_WORKERS   VARCHAR(75), /*Varchar to save space */
+NEW_EMPLOYMENT  VARCHAR(75), /*Varchar to save space */
+CONTINUED_EMPLOYMENT  INT UNSIGNED, /* Covers max values */ 
+CHANGE_PREVIOUS_EMPLOYMENT  SMALLINT UNSIGNED, /* Covers max values */ 
+NEW_CONCURRENT_EMPLOYMENT  SMALLINT UNSIGNED, /* Covers max values */ 
+CHANGE_EMPLOYER  SMALLINT UNSIGNED, /* Covers max values */
+AMENDED_PETITION VARCHAR(100), /*Varchar to save space */
+FULL_TIME_POSITION VARCHAR(10), /*Varchar to save space */ 
+PREVAILING_WAGE  VARCHAR(75), /*Varchar to save space */
+PW_UNIT_OF_PAY VARCHAR(100), /*Varchar to save space */ 
+PW_WAGE_LEVEL VARCHAR(100), /*Varchar to save space */
+PW_SOURCE VARCHAR(100), /*Varchar to save space */ 
+PW_SOURCE_YEAR VARCHAR(100), /*Varchar to save space */
+PW_SOURCE_OTHER VARCHAR(100), /*Varchar to save space */ 
+WAGE_RATE_OF_PAY_FROM VARCHAR(100), /*Varchar to save space */
+WAGE_RATE_OF_PAY_TO VARCHAR(100), /*Varchar to save space */
+WAGE_UNIT_OF_PAY VARCHAR(100), /*Varchar to save space */ 
+H1B_DEPENDENT VARCHAR(10), /*Varchar to save space */ 
+WILLFUL_VIOLATOR VARCHAR(10), /*Varchar to save space */
+SUPPORT_H1B VARCHAR(10), /*Varchar to save space */
+LABOR_CON_AGREE VARCHAR(10), /*Varchar to save space */
+PUBLIC_DISCLOSURE_LOCATION VARCHAR(100), /*Varchar to save space */
+WORKSITE_CITY VARCHAR(100) , /*Varchar to save space */ 
+WORKSITE_COUNTY VARCHAR(100) , /*Varchar to save space */
+WORKSITE_STATE VARCHAR(10), /*Varchar to save space */
+WORKSITE_POSTAL_CODE CHAR(25), /*Char to include zip code extensions and for faster search*/ 
+ORIGINAL_CERT_DATE VARCHAR(70), /*Varchar to save space */
+PRIMARY KEY (CASE_ID, CASE_NUMBER)
+) ENGINE=INNODB;
+
+/*Load use to insert data into megtable*/ 
+LOAD DATA INFILE 'h1b17.csv' IGNORE
+INTO TABLE mega_table 
+FIELDS TERMINATED BY ',' 
+ENCLOSED BY '"' 
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+CASE_ID, CASE_NUMBER,CASE_STATUS,CASE_SUBMITTED,DECISION_DATE,VISA_CLASS,EMPLOYMENT_START_DATE,
+EMPLOYMENT_END_DATE,EMPLOYER_NAME,EMPLOYER_BUSINESS_DBA,EMPLOYER_ADDRESS,EMPLOYER_CITY,EMPLOYER_STATE,
+EMPLOYER_POSTAL_CODE,EMPLOYER_COUNTRY,EMPLOYER_PROVINCE,EMPLOYER_PHONE,EMPLOYER_PHONE_EXT,
+AGENT_REPRESENTING_EMPLOYER,AGENT_ATTORNEY_NAME, AGENT_ATTORNEY_CITY,AGENT_ATTORNEY_STATE,JOB_TITLE,
+SOC_CODE,SOC_NAME,NAICS_CODE,TOTAL_WORKERS,NEW_EMPLOYMENT,CONTINUED_EMPLOYMENT,
+CHANGE_PREVIOUS_EMPLOYMENT,NEW_CONCURRENT_EMPLOYMENT,CHANGE_EMPLOYER,AMENDED_PETITION,FULL_TIME_POSITION,
+PREVAILING_WAGE,PW_UNIT_OF_PAY,PW_WAGE_LEVEL,PW_SOURCE,PW_SOURCE_YEAR,PW_SOURCE_OTHER,
+WAGE_RATE_OF_PAY_FROM,WAGE_RATE_OF_PAY_TO, WAGE_UNIT_OF_PAY,H1B_DEPENDENT,WILLFUL_VIOLATOR,
+SUPPORT_H1B,LABOR_CON_AGREE,PUBLIC_DISCLOSURE_LOCATION,WORKSITE_CITY,WORKSITE_COUNTY,WORKSITE_STATE,
+WORKSITE_POSTAL_CODE,ORIGINAL_CERT_DATE
+);
+
+
+
+/* Case info contains core info regarding the case such as the status and decision date */ 
+DROP TABLE IF EXISTS case_info;
+CREATE TABLE IF NOT EXISTS case_info(
+CASE_ID INT UNSIGNED AUTO_INCREMENT, /* Covers max values */ 
+CASE_NUMBER VARCHAR(50), /*Varchar to save space */
+CASE_STATUS VARCHAR(30), /*Varchar to save space */
+CASE_SUBMITTED VARCHAR(50), /*Varchar to save space */
+DECISION_DATE VARCHAR(15), /*Varchar to save space */
+  PRIMARY KEY(CASE_ID, CASE_NUMBER, CASE_SUBMITTED),
+      	CONSTRAINT fk_1
+        FOREIGN KEY (CASE_ID, CASE_NUMBER)                      
+			REFERENCES mega_table(CASE_ID, CASE_NUMBER)
+            ON UPDATE CASCADE
+            ON DELETE CASCADE
+)ENGINE = INNODB;
+
+INSERT INTO case_info (CASE_ID, CASE_NUMBER,CASE_STATUS,CASE_SUBMITTED,DECISION_DATE)
+SELECT CASE_ID, CASE_NUMBER,CASE_STATUS,CASE_SUBMITTED,DECISION_DATE
+FROM mega_table;
+
+/* Employment info contains core info regarding employment of h1b applicants*/ 
+DROP TABLE IF EXISTS employment_info;
+CREATE TABLE IF NOT EXISTS employment_info(
+CASE_ID INT UNSIGNED AUTO_INCREMENT, /* Covers max values */ 
+CASE_NUMBER VARCHAR(50), /*Varchar to save space */
+EMPLOYMENT_START_DATE VARCHAR(15), /*Varchar to save space */
+EMPLOYMENT_END_DATE	VARCHAR(15), /*Varchar to save space */
+NAICS_CODE VARCHAR(75), /*Varchar to save space */
+  PRIMARY KEY(CASE_ID, CASE_NUMBER),
+      	CONSTRAINT fk_2
+        FOREIGN KEY (CASE_ID, CASE_NUMBER)                      
+			REFERENCES case_info(CASE_ID, CASE_NUMBER)
+            ON UPDATE CASCADE
+            ON DELETE CASCADE
+)ENGINE = INNODB;
+
+INSERT INTO employment_info (CASE_ID, CASE_NUMBER,EMPLOYMENT_START_DATE,EMPLOYMENT_END_DATE, NAICS_CODE)
+SELECT CASE_ID, CASE_NUMBER,EMPLOYMENT_START_DATE,EMPLOYMENT_END_DATE,NAICS_CODE
+FROM mega_table;
+
+/* Employment info additional contains additional info regarding employment of h1b applicants*/ 
+DROP TABLE IF EXISTS employment_info_additional;
+CREATE TABLE IF NOT EXISTS employment_info_additional(
+CASE_ID INT UNSIGNED AUTO_INCREMENT, /* Covers max values */ 
+CASE_NUMBER VARCHAR(50), /*Varchar to save space */
+JOB_TITLE	VARCHAR(500), /*Varchar to save space */
+SOC_CODE VARCHAR(50), /*Varchar to save space */
+SOC_NAME VARCHAR(75), /*Varchar to save space */
+  PRIMARY KEY(CASE_ID, CASE_NUMBER, JOB_TITLE, SOC_CODE),
+      	CONSTRAINT fk_2_1
+        FOREIGN KEY (CASE_ID, CASE_NUMBER)                      
+			REFERENCES employment_info(CASE_ID, CASE_NUMBER)
+            ON UPDATE CASCADE
+            ON DELETE CASCADE
+)ENGINE = INNODB;
+
+INSERT INTO employment_info_additional (CASE_ID, CASE_NUMBER,JOB_TITLE,SOC_CODE,SOC_NAME)
+SELECT CASE_ID, CASE_NUMBER,JOB_TITLE, SOC_CODE,SOC_NAME
+FROM mega_table;
+
+/* Employer info contains core info regarding employers of h1b applicants*/ 
+DROP TABLE IF EXISTS employer_info;
+CREATE TABLE IF NOT EXISTS employer_info(
+CASE_ID INT UNSIGNED AUTO_INCREMENT, /* Covers max values */ 
+CASE_NUMBER VARCHAR(50), /*Varchar to save space */ 
+EMPLOYER_NAME VARCHAR(750), /*Varchar to save space */
+EMPLOYER_BUSINESS_DBA VARCHAR(500), /*Varchar to save space */
+EMPLOYER_PHONE VARCHAR(75), /*Varchar to save space */
+EMPLOYER_PHONE_EXT VARCHAR(75), /*Varchar to save space */
+TOTAL_WORKERS   VARCHAR(75), /*Varchar to save space */
+EMPLOYER_PROVINCE VARCHAR(50), /*Varchar to save space */
+  PRIMARY KEY(CASE_ID, CASE_NUMBER, EMPLOYER_NAME),
+      	CONSTRAINT fk_3
+        FOREIGN KEY (CASE_ID, CASE_NUMBER)                      
+			REFERENCES employment_info(CASE_ID, CASE_NUMBER)
+            ON UPDATE CASCADE
+            ON DELETE CASCADE
+)ENGINE = INNODB;
+
+INSERT INTO employer_info (CASE_ID,CASE_NUMBER,EMPLOYER_NAME,EMPLOYER_BUSINESS_DBA,
+                             EMPLOYER_PROVINCE,EMPLOYER_PHONE,EMPLOYER_PHONE_EXT,TOTAL_WORKERS)
+SELECT CASE_ID, CASE_NUMBER,EMPLOYER_NAME,EMPLOYER_BUSINESS_DBA,
+                             EMPLOYER_PROVINCE,EMPLOYER_PHONE,EMPLOYER_PHONE_EXT,TOTAL_WORKERS
+FROM mega_table;
+
+/* Employer info address contains address info of employers of h1b applicants*/ 
+DROP TABLE IF EXISTS employer_info_address;
+CREATE TABLE IF NOT EXISTS employer_info_address(
+CASE_ID INT UNSIGNED AUTO_INCREMENT, /* Covers max values */ 
+CASE_NUMBER VARCHAR(50), /*Varchar to save space */ 
+EMPLOYER_ADDRESS	VARCHAR(200), /*Varchar to save space */
+EMPLOYER_CITY	VARCHAR(50), /*Varchar to save space */
+EMPLOYER_STATE	VARCHAR(10), /*Varchar to save space */
+EMPLOYER_POSTAL_CODE VARCHAR(100), /*Varchar to save space */
+EMPLOYER_COUNTRY VARCHAR(50), /*Varchar to save space */
+  PRIMARY KEY(CASE_ID, CASE_NUMBER, EMPLOYER_ADDRESS, EMPLOYER_POSTAL_CODE),
+      	CONSTRAINT fk_3_1
+        FOREIGN KEY (CASE_ID, CASE_NUMBER)                      
+			REFERENCES employer_info(CASE_ID, CASE_NUMBER)
+            ON UPDATE CASCADE
+            ON DELETE CASCADE
+)ENGINE = INNODB;
+
+INSERT INTO employer_info_address (CASE_ID,CASE_NUMBER,EMPLOYER_ADDRESS,
+                             EMPLOYER_CITY,EMPLOYER_STATE,EMPLOYER_POSTAL_CODE,EMPLOYER_COUNTRY)
+SELECT CASE_ID,CASE_NUMBER,EMPLOYER_ADDRESS,
+                             EMPLOYER_CITY,EMPLOYER_STATE,EMPLOYER_POSTAL_CODE,EMPLOYER_COUNTRY
+FROM mega_table;
+
+/* Agent info contains info regarding agents re[resenting h1b employers*/ 
+DROP TABLE IF EXISTS agent_info;
+CREATE TABLE IF NOT EXISTS agent_info(
+CASE_ID INT UNSIGNED AUTO_INCREMENT, /* Covers max values */ 
+CASE_NUMBER VARCHAR(50), /*Varchar to save space */
+AGENT_REPRESENTING_EMPLOYER	VARCHAR(100), /*Varchar to save space */
+AGENT_ATTORNEY_NAME	VARCHAR(50), /*Varchar to save space */
+AGENT_ATTORNEY_CITY	VARCHAR(50), /*Varchar to save space */
+AGENT_ATTORNEY_STATE VARCHAR(100), /*Varchar to save space */
+  PRIMARY KEY(CASE_ID, CASE_NUMBER, AGENT_ATTORNEY_NAME),
+      	CONSTRAINT fk_4
+        FOREIGN KEY (CASE_ID, CASE_NUMBER)                      
+			REFERENCES employer_info(CASE_ID, CASE_NUMBER)
+            ON UPDATE CASCADE
+            ON DELETE CASCADE
+)ENGINE = INNODB;
+
+INSERT INTO agent_info (CASE_ID,CASE_NUMBER,AGENT_REPRESENTING_EMPLOYER,AGENT_ATTORNEY_NAME, 
+                        AGENT_ATTORNEY_CITY,AGENT_ATTORNEY_STATE)
+SELECT CASE_ID,CASE_NUMBER,AGENT_REPRESENTING_EMPLOYER,AGENT_ATTORNEY_NAME, 
+		AGENT_ATTORNEY_CITY,AGENT_ATTORNEY_STATE
+FROM mega_table;
+
+/* Wage info contains core info regarding wages of h1b applicants*/ 
+DROP TABLE IF EXISTS wage_info;
+CREATE TABLE IF NOT EXISTS wage_info(
+CASE_ID INT UNSIGNED AUTO_INCREMENT, /* Covers max values */ 
+CASE_NUMBER VARCHAR(50), /*Varchar to save space */
+FULL_TIME_POSITION VARCHAR(10), /*Varchar to save space */
+PREVAILING_WAGE  VARCHAR(75), /*Varchar to save space */
+PW_UNIT_OF_PAY VARCHAR(100), /*Varchar to save space */ 
+PW_WAGE_LEVEL VARCHAR(100), /*Varchar to save space */
+PW_SOURCE VARCHAR(100), /*Varchar to save space */ 
+PW_SOURCE_YEAR VARCHAR(100), /*Varchar to save space */
+PW_SOURCE_OTHER VARCHAR(100), /*Varchar to save space */
+WAGE_RATE_OF_PAY_FROM VARCHAR(100), /*Varchar to save space */
+WAGE_RATE_OF_PAY_TO VARCHAR(100), /*Varchar to save space */
+WAGE_UNIT_OF_PAY VARCHAR(100), /*Varchar to save space */ 
+  PRIMARY KEY(CASE_ID, CASE_NUMBER),
+      	CONSTRAINT fk_5
+        FOREIGN KEY (CASE_ID, CASE_NUMBER)                      
+			REFERENCES agent_info(CASE_ID, CASE_NUMBER)
+            ON UPDATE CASCADE
+            ON DELETE CASCADE
+)ENGINE = INNODB;
+
+INSERT INTO wage_info (CASE_ID,CASE_NUMBER,FULL_TIME_POSITION,PREVAILING_WAGE,PW_UNIT_OF_PAY,
+					   PW_WAGE_LEVEL,PW_SOURCE,PW_SOURCE_YEAR,PW_SOURCE_OTHER,
+					   WAGE_RATE_OF_PAY_FROM,WAGE_RATE_OF_PAY_TO, WAGE_UNIT_OF_PAY)
+SELECT CASE_ID,CASE_NUMBER,FULL_TIME_POSITION,PREVAILING_WAGE,PW_UNIT_OF_PAY,
+					   PW_WAGE_LEVEL,PW_SOURCE,PW_SOURCE_YEAR,PW_SOURCE_OTHER,
+					   WAGE_RATE_OF_PAY_FROM,WAGE_RATE_OF_PAY_TO, WAGE_UNIT_OF_PAY
+FROM mega_table;
+
+/* Legal info contains legally required info of h1b applicants*/ 
+DROP TABLE IF EXISTS legal_info;
+CREATE TABLE IF NOT EXISTS legal_info(
+CASE_ID INT UNSIGNED AUTO_INCREMENT, /* Covers max values */ 
+CASE_NUMBER VARCHAR(50), /*Varchar to save space */
+H1B_DEPENDENT VARCHAR(10), /*Varchar to save space */ 
+WILLFUL_VIOLATOR VARCHAR(10), /*Varchar to save space */ 
+SUPPORT_H1B VARCHAR(10), /*Varchar to save space */
+LABOR_CON_AGREE VARCHAR(10), /*Varchar to save space */ 
+PUBLIC_DISCLOSURE_LOCATION VARCHAR(100), /*Varchar to save space */ 
+ORIGINAL_CERT_DATE VARCHAR(70), /*Varchar to save space */
+VISA_CLASS	VARCHAR(100), /*Varchar to save space */
+  PRIMARY KEY(CASE_ID, CASE_NUMBER),
+      	CONSTRAINT fk_6
+        FOREIGN KEY (CASE_ID, CASE_NUMBER)                      
+			REFERENCES wage_info(CASE_ID, CASE_NUMBER)
+            ON UPDATE CASCADE
+            ON DELETE CASCADE
+)ENGINE = INNODB;
+
+INSERT INTO legal_info (CASE_ID,CASE_NUMBER,WILLFUL_VIOLATOR, SUPPORT_H1B,LABOR_CON_AGREE,
+                        PUBLIC_DISCLOSURE_LOCATION, ORIGINAL_CERT_DATE, VISA_CLASS)
+SELECT CASE_ID,CASE_NUMBER,WILLFUL_VIOLATOR, SUPPORT_H1B,LABOR_CON_AGREE,
+       PUBLIC_DISCLOSURE_LOCATION, ORIGINAL_CERT_DATE, VISA_CLASS
+FROM mega_table;
+
+/* Worksite info contains core info regarding worksite location of h1b applicants*/
+DROP TABLE IF EXISTS worksite_info;
+CREATE TABLE IF NOT EXISTS worksite_info(
+CASE_ID INT UNSIGNED AUTO_INCREMENT, /* Covers max values */ 
+CASE_NUMBER VARCHAR(50), /*Varchar to save space */
+WORKSITE_CITY VARCHAR(100) , /*Varchar to save space */
+WORKSITE_COUNTY VARCHAR(100) , /*Varchar to save space */ 
+WORKSITE_STATE VARCHAR(10), /*Varchar to save space */ 
+WORKSITE_POSTAL_CODE CHAR(25), /*Char to include zip code extensions and for faster search*/
+  PRIMARY KEY(CASE_ID, CASE_NUMBER, WORKSITE_POSTAL_CODE),
+      	CONSTRAINT fk_7
+        FOREIGN KEY (CASE_ID, CASE_NUMBER)                      
+			REFERENCES legal_info(CASE_ID, CASE_NUMBER)
+            ON UPDATE CASCADE
+            ON DELETE CASCADE
+)ENGINE = INNODB;
+
+INSERT INTO worksite_info (CASE_ID,CASE_NUMBER,WORKSITE_CITY,WORKSITE_COUNTY,WORKSITE_STATE,
+                           WORKSITE_POSTAL_CODE)
+SELECT CASE_ID,CASE_NUMBER,WORKSITE_CITY,WORKSITE_COUNTY,WORKSITE_STATE, WORKSITE_POSTAL_CODE
+FROM mega_table;
+
+/* Employment history contains the employmet history info of h1b applicants*/
+DROP TABLE IF EXISTS employment_history;
+CREATE TABLE IF NOT EXISTS employment_history(
+CASE_ID INT UNSIGNED AUTO_INCREMENT, /* Covers max values */ 
+CASE_NUMBER VARCHAR(50), /*Varchar to save space */
+NEW_EMPLOYMENT  VARCHAR(75), /* Covers max values */ 
+CONTINUED_EMPLOYMENT  INT UNSIGNED, /* Covers max values */ 
+CHANGE_PREVIOUS_EMPLOYMENT  SMALLINT UNSIGNED, /* Covers max values */ 
+NEW_CONCURRENT_EMPLOYMENT  SMALLINT UNSIGNED, /* Covers max values */ 
+CHANGE_EMPLOYER  SMALLINT UNSIGNED, /* Covers max values */ 
+AMENDED_PETITION VARCHAR(100), /*Varchar to save space */
+  PRIMARY KEY(CASE_ID, CASE_NUMBER),
+      	CONSTRAINT fk_8
+        FOREIGN KEY (CASE_ID, CASE_NUMBER)                      
+			REFERENCES worksite_info(CASE_ID, CASE_NUMBER)
+            ON UPDATE CASCADE
+            ON DELETE CASCADE
+)ENGINE = INNODB;
+
+
+INSERT INTO employment_history (CASE_ID,CASE_NUMBER,NEW_EMPLOYMENT,CONTINUED_EMPLOYMENT,
+                                CHANGE_PREVIOUS_EMPLOYMENT,NEW_CONCURRENT_EMPLOYMENT,
+                                CHANGE_EMPLOYER,AMENDED_PETITION)
+SELECT CASE_ID,CASE_NUMBER,NEW_EMPLOYMENT,CONTINUED_EMPLOYMENT, CHANGE_PREVIOUS_EMPLOYMENT,
+       NEW_CONCURRENT_EMPLOYMENT,CHANGE_EMPLOYER,AMENDED_PETITION
+FROM mega_table;
+
+/*Auto Insert procedure inserts data from megatable to decomposed tables
+Especially important for newly inserted data */
+
+DROP PROCEDURE IF EXISTS auto_insert;
+
+DELIMITER //
+CREATE PROCEDURE auto_insert(
+ /* Covers max values */ 
+CASE_NUMBER VARCHAR(50), /*Varchar to save space */
+CASE_STATUS VARCHAR(30), /*Varchar to save space */
+CASE_SUBMITTED VARCHAR(50), /*Varchar to save space */
+DECISION_DATE VARCHAR(15)	, /*Varchar to save space */
+VISA_CLASS	VARCHAR(100), /*Varchar to save space */
+EMPLOYMENT_START_DATE VARCHAR(15)	, /*Varchar to save space */
+EMPLOYMENT_END_DATE	VARCHAR(15), /*Varchar to save space */
+EMPLOYER_NAME VARCHAR(750)	, /*Varchar to save space */
+EMPLOYER_BUSINESS_DBA VARCHAR(500)	, /*Varchar to save space */
+EMPLOYER_ADDRESS	VARCHAR(200), /*Varchar to save space */
+EMPLOYER_CITY	VARCHAR(50), /*Varchar to save space */
+EMPLOYER_STATE	VARCHAR(10), /*Varchar to save space */
+EMPLOYER_POSTAL_CODE VARCHAR(100)	, /*Varchar to save space */
+EMPLOYER_COUNTRY VARCHAR(50)	, /*Varchar to save space */
+EMPLOYER_PROVINCE VARCHAR(50)	, /*Varchar to save space */
+EMPLOYER_PHONE VARCHAR(75), /*Varchar to save space */
+EMPLOYER_PHONE_EXT VARCHAR(75)	, /*Varchar to save space */
+AGENT_REPRESENTING_EMPLOYER	VARCHAR(100), /*Varchar to save space */
+AGENT_ATTORNEY_NAME	VARCHAR(50), /*Varchar to save space */
+AGENT_ATTORNEY_CITY	VARCHAR(50), /*Varchar to save space */
+AGENT_ATTORNEY_STATE VARCHAR(100)	, /*Varchar to save space */
+JOB_TITLE	VARCHAR(500), /*Varchar to save space */
+SOC_CODE VARCHAR(50)	, /*Varchar to save space */
+SOC_NAME VARCHAR(75)	, /*Varchar to save space */
+NAICS_CODE VARCHAR(75), /*Varchar to save space */
+TOTAL_WORKERS   VARCHAR(75), /*Varchar to save space */
+NEW_EMPLOYMENT  VARCHAR(75), /*Varchar to save space */
+CONTINUED_EMPLOYMENT  INT UNSIGNED, /* Covers max values */ 
+CHANGE_PREVIOUS_EMPLOYMENT  SMALLINT UNSIGNED, /* Covers max values */ 
+NEW_CONCURRENT_EMPLOYMENT  SMALLINT UNSIGNED, /* Covers max values */ 
+CHANGE_EMPLOYER  SMALLINT UNSIGNED, /* Covers max values */
+AMENDED_PETITION VARCHAR(100), /*Varchar to save space */
+FULL_TIME_POSITION VARCHAR(10), /*Varchar to save space */ 
+PREVAILING_WAGE  VARCHAR(75), /*Varchar to save space */
+PW_UNIT_OF_PAY VARCHAR(100), /*Varchar to save space */ 
+PW_WAGE_LEVEL VARCHAR(100), /*Varchar to save space */
+PW_SOURCE VARCHAR(100), /*Varchar to save space */ 
+PW_SOURCE_YEAR VARCHAR(100), /*Varchar to save space */
+PW_SOURCE_OTHER VARCHAR(100), /*Varchar to save space */ 
+WAGE_RATE_OF_PAY_FROM VARCHAR(100), /*Varchar to save space */
+WAGE_RATE_OF_PAY_TO VARCHAR(100), /*Varchar to save space */
+WAGE_UNIT_OF_PAY VARCHAR(100), /*Varchar to save space */ 
+H1B_DEPENDENT VARCHAR(10), /*Varchar to save space */ 
+WILLFUL_VIOLATOR VARCHAR(10), /*Varchar to save space */
+SUPPORT_H1B VARCHAR(10), /*Varchar to save space */
+LABOR_CON_AGREE VARCHAR(10), /*Varchar to save space */
+PUBLIC_DISCLOSURE_LOCATION VARCHAR(100), /*Varchar to save space */
+WORKSITE_CITY VARCHAR(100) , /*Varchar to save space */ 
+WORKSITE_COUNTY VARCHAR(100) , /*Varchar to save space */
+WORKSITE_STATE VARCHAR(10), /*Varchar to save space */
+WORKSITE_POSTAL_CODE CHAR(25), /*Char to include zip code extensions and for faster search*/ 
+ORIGINAL_CERT_DATE VARCHAR(70) /*Varchar to save space */
+)
+
+BEGIN
+
+INSERT INTO case_info ( CASE_NUMBER,CASE_STATUS,CASE_SUBMITTED,DECISION_DATE)
+SELECT  CASE_NUMBER,CASE_STATUS,CASE_SUBMITTED,DECISION_DATE;
+
+INSERT INTO employment_info ( CASE_NUMBER,EMPLOYMENT_START_DATE,EMPLOYMENT_END_DATE, NAICS_CODE)
+SELECT  CASE_NUMBER,EMPLOYMENT_START_DATE,EMPLOYMENT_END_DATE,NAICS_CODE;
+
+INSERT INTO employment_info_additional ( CASE_NUMBER,JOB_TITLE,SOC_CODE,SOC_NAME)
+SELECT  CASE_NUMBER,JOB_TITLE, SOC_CODE,SOC_NAME;
+
+INSERT INTO employer_info (CASE_NUMBER,EMPLOYER_NAME,EMPLOYER_BUSINESS_DBA,
+                             EMPLOYER_PROVINCE,EMPLOYER_PHONE,EMPLOYER_PHONE_EXT,TOTAL_WORKERS)
+SELECT  CASE_NUMBER,EMPLOYER_NAME,EMPLOYER_BUSINESS_DBA,
+                             EMPLOYER_PROVINCE,EMPLOYER_PHONE,EMPLOYER_PHONE_EXT,TOTAL_WORKERS;
+
+INSERT INTO employer_info_address (CASE_NUMBER,EMPLOYER_ADDRESS,
+                             EMPLOYER_CITY,EMPLOYER_STATE,EMPLOYER_POSTAL_CODE,EMPLOYER_COUNTRY)
+SELECT CASE_NUMBER,EMPLOYER_ADDRESS,
+                             EMPLOYER_CITY,EMPLOYER_STATE,EMPLOYER_POSTAL_CODE,EMPLOYER_COUNTRY;
+ 
+INSERT INTO agent_info (CASE_NUMBER,AGENT_REPRESENTING_EMPLOYER,AGENT_ATTORNEY_NAME, 
+                        AGENT_ATTORNEY_CITY,AGENT_ATTORNEY_STATE)
+SELECT CASE_NUMBER,AGENT_REPRESENTING_EMPLOYER,AGENT_ATTORNEY_NAME, 
+		AGENT_ATTORNEY_CITY,AGENT_ATTORNEY_STATE;
+
+
+INSERT INTO wage_info (CASE_NUMBER,FULL_TIME_POSITION,PREVAILING_WAGE,PW_UNIT_OF_PAY,
+					   PW_WAGE_LEVEL,PW_SOURCE,PW_SOURCE_YEAR,PW_SOURCE_OTHER,
+					   WAGE_RATE_OF_PAY_FROM,WAGE_RATE_OF_PAY_TO, WAGE_UNIT_OF_PAY)
+SELECT CASE_NUMBER,FULL_TIME_POSITION,PREVAILING_WAGE,PW_UNIT_OF_PAY,
+					   PW_WAGE_LEVEL,PW_SOURCE,PW_SOURCE_YEAR,PW_SOURCE_OTHER,
+					   WAGE_RATE_OF_PAY_FROM,WAGE_RATE_OF_PAY_TO, WAGE_UNIT_OF_PAY;
+                       
+INSERT INTO legal_info (CASE_NUMBER,WILLFUL_VIOLATOR, SUPPORT_H1B,LABOR_CON_AGREE,
+                        PUBLIC_DISCLOSURE_LOCATION, ORIGINAL_CERT_DATE, VISA_CLASS)
+SELECT CASE_NUMBER,WILLFUL_VIOLATOR, SUPPORT_H1B,LABOR_CON_AGREE,
+       PUBLIC_DISCLOSURE_LOCATION, ORIGINAL_CERT_DATE, VISA_CLASS;
+                       
+INSERT INTO worksite_info (CASE_NUMBER,WORKSITE_CITY,WORKSITE_COUNTY,WORKSITE_STATE,
+                           WORKSITE_POSTAL_CODE)
+SELECT CASE_NUMBER,WORKSITE_CITY,WORKSITE_COUNTY,WORKSITE_STATE, WORKSITE_POSTAL_CODE;
+
+INSERT INTO employment_history (CASE_NUMBER,NEW_EMPLOYMENT,CONTINUED_EMPLOYMENT,
+                                CHANGE_PREVIOUS_EMPLOYMENT,NEW_CONCURRENT_EMPLOYMENT,
+                                CHANGE_EMPLOYER,AMENDED_PETITION)
+SELECT CASE_NUMBER,NEW_EMPLOYMENT,CONTINUED_EMPLOYMENT, CHANGE_PREVIOUS_EMPLOYMENT,
+       NEW_CONCURRENT_EMPLOYMENT,CHANGE_EMPLOYER,AMENDED_PETITION; 
+       
+END//
+
+DELIMITER ;
+
+/*Update case status procedure updates data in case info that was updated by user in megatable*/
+DROP PROCEDURE IF EXISTS update_case_status;
+
+DELIMITER //
+CREATE PROCEDURE update_case_status(
+CASE_NUMBER VARCHAR(50),
+NEW_CASE_STATUS VARCHAR(30)
+)
+BEGIN
+
+	UPDATE case_info
+	SET  case_info.CASE_STATUS = NEW_CASE_STATUS
+	WHERE  case_info.CASE_NUMBER = CASE_NUMBER;
+
+ 
+END//
+
+DELIMITER ;
+Call update_case_status("I-200-15053-636744","WITHDRAWN");
+/*Update decision date procedure updates data in case info that was updated by user in megatable*/
+DROP PROCEDURE IF EXISTS update_decision_date;
+
+DELIMITER //
+CREATE PROCEDURE update_decision_date(
+CASE_NUMBER VARCHAR(50),
+NEW_DECISION_DATE VARCHAR(15)
+)
+BEGIN
+
+	UPDATE case_info
+	SET  case_info.DECISION_DATE = NEW_DECISION_DATE
+	WHERE  case_info.CASE_NUMBER = CASE_NUMBER;
+
+ 
+END//
+
+DELIMITER ;
+
+/*Update start date procedure updates data in employment info that was updated by user in megatable*/
+DROP PROCEDURE IF EXISTS update_start_date;
+
+DELIMITER //
+CREATE PROCEDURE update_start_date(
+CASE_NUMBER VARCHAR(50),
+NEW_EMPLOYMENT_START_DATE VARCHAR(15)
+)
+BEGIN
+
+	UPDATE employment_info
+	SET  employment_info.EMPLOYMENT_START_DATE = NEW_EMPLOYMENT_START_DATE
+	WHERE  employment_info.CASE_NUMBER = CASE_NUMBER;
+
+ 
+END//
+
+DELIMITER ;
+
+/*Update end date procedure updates data in employment info that was updated by user in megatable*/
+DROP PROCEDURE IF EXISTS update_end_date;
+
+DELIMITER //
+CREATE PROCEDURE update_end_date(
+CASE_NUMBER VARCHAR(50),
+NEW_EMPLOYMENT_END_DATE VARCHAR(15)
+)
+BEGIN
+
+	UPDATE employment_info
+	SET  employment_info.EMPLOYMENT_END_DATE = NEW_EMPLOYMENT_END_DATE
+	WHERE  employment_info.CASE_NUMBER = CASE_NUMBER;
+
+ 
+END//
+
+DELIMITER ;
+
+/*Update employer address procedure updates data in employment info that was updated by user in megatable*/
+DROP PROCEDURE IF EXISTS update_employer_address;
+
+DELIMITER //
+CREATE PROCEDURE update_employer_address(
+CASE_NUMBER VARCHAR(50),
+NEW_EMPLOYER_ADDRESS VARCHAR(200)
+)
+BEGIN
+
+	UPDATE employer_info_address
+	SET  employer_info_address.EMPLOYER_ADDRESS = NEW_EMPLOYER_ADDRESS
+	WHERE  employer_info_address.CASE_NUMBER = CASE_NUMBER;
+
+ 
+END//
+
+DELIMITER ;
+
+CALL update_employer_address("I-200-16055-173457","3416 Murphy Road");
+
+/*Entry before insert trigger ensures that any data inserted by user is NOT NULL for primary keys of decomposed tables*/
+DROP TRIGGER IF EXISTS entry_before_insert;
+DELIMITER //
+
+CREATE TRIGGER entry_before_insert
+BEFORE INSERT 
+ON mega_table
+FOR EACH ROW
+BEGIN 
+  
+   IF NEW.WORKSITE_POSTAL_CODE IS NULL OR NEW.WORKSITE_POSTAL_CODE=""
+   THEN SIGNAL SQLSTATE '22003'
+   SET MESSAGE_TEXT = 'WORKSITE_POSTAL_CODE cannot be empty',
+   MYSQL_ERRNO = 1264;
+   END IF;
+   
+   IF NEW.EMPLOYER_ADDRESS IS NULL OR NEW.EMPLOYER_ADDRESS=""
+   THEN SIGNAL SQLSTATE '22003'
+   SET MESSAGE_TEXT = 'EMPLOYER_ADDRESS cannot be empty',
+   MYSQL_ERRNO = 1264;
+   END IF;
+   
+   IF NEW.EMPLOYER_POSTAL_CODE IS NULL OR NEW.EMPLOYER_POSTAL_CODE=""
+   THEN SIGNAL SQLSTATE '22003'
+   SET MESSAGE_TEXT = 'EMPLOYER_POSTAL_CODE cannot be empty',
+   MYSQL_ERRNO = 1264;
+   END IF;
+   
+   IF NEW.AGENT_ATTORNEY_NAME IS NULL OR NEW.AGENT_ATTORNEY_NAME=""
+   THEN SIGNAL SQLSTATE '22003'
+   SET MESSAGE_TEXT = 'AGENT_ATTORNEY_NAME cannot be empty',
+   MYSQL_ERRNO = 1264;
+   END IF;
+   
+   IF NEW.EMPLOYER_NAME IS NULL OR NEW.EMPLOYER_NAME=""
+   THEN SIGNAL SQLSTATE '22003'
+   SET MESSAGE_TEXT = 'EMPLOYER_NAME cannot be empty',
+   MYSQL_ERRNO = 1264;
+   END IF;
+   
+   IF NEW.SOC_CODE IS NULL OR NEW.SOC_CODE=""
+   THEN SIGNAL SQLSTATE '22003'
+   SET MESSAGE_TEXT = 'SOC_CODE cannot be empty',
+   MYSQL_ERRNO = 1264;
+   END IF;
+   
+   IF NEW.JOB_TITLE IS NULL OR NEW.JOB_TITLE=""
+   THEN SIGNAL SQLSTATE '22003'
+   SET MESSAGE_TEXT = 'JOB_TITLE cannot be empty',
+   MYSQL_ERRNO = 1264;
+   END IF;
+   
+   IF NEW.CASE_SUBMITTED IS NULL OR NEW.CASE_SUBMITTED=""
+   THEN SIGNAL SQLSTATE '22003'
+   SET MESSAGE_TEXT = 'CASE_SUBMITTED cannot be empty',
+   MYSQL_ERRNO = 1264;
+   END IF;
+   
+   IF NEW.CASE_NUMBER IS NULL OR NEW.CASE_NUMBER=""
+   THEN SIGNAL SQLSTATE '22003'
+   SET MESSAGE_TEXT = 'CASE_NUMBER cannot be empty',
+   MYSQL_ERRNO = 1264;
+   END IF;
+END //
+
+DELIMITER ;
+
+-- Inserting data into decomposed tables
+DROP TRIGGER IF EXISTS entry_after_insert;
+DELIMITER //
+
+CREATE TRIGGER entry_after_insert
+AFTER INSERT 
+ON mega_table
+FOR EACH ROW
+BEGIN 
+CALL auto_insert( NEW.CASE_NUMBER,NEW.CASE_STATUS,NEW.CASE_SUBMITTED,NEW.DECISION_DATE,NEW.VISA_CLASS,NEW.EMPLOYMENT_START_DATE,
+NEW.EMPLOYMENT_END_DATE,NEW.EMPLOYER_NAME,NEW.EMPLOYER_BUSINESS_DBA,NEW.EMPLOYER_ADDRESS,NEW.EMPLOYER_CITY,NEW.EMPLOYER_STATE,
+NEW.EMPLOYER_POSTAL_CODE,NEW.EMPLOYER_COUNTRY,NEW.EMPLOYER_PROVINCE,NEW.EMPLOYER_PHONE,NEW.EMPLOYER_PHONE_EXT,
+NEW.AGENT_REPRESENTING_EMPLOYER,NEW.AGENT_ATTORNEY_NAME,NEW.AGENT_ATTORNEY_CITY,NEW.AGENT_ATTORNEY_STATE,NEW.JOB_TITLE,
+NEW.SOC_CODE,NEW.SOC_NAME,NEW.NAICS_CODE,NEW.TOTAL_WORKERS,NEW.NEW_EMPLOYMENT,NEW.CONTINUED_EMPLOYMENT,
+NEW.CHANGE_PREVIOUS_EMPLOYMENT,NEW.NEW_CONCURRENT_EMPLOYMENT,NEW.CHANGE_EMPLOYER,NEW.AMENDED_PETITION,NEW.FULL_TIME_POSITION,
+NEW.PREVAILING_WAGE,NEW.PW_UNIT_OF_PAY,NEW.PW_WAGE_LEVEL,NEW.PW_SOURCE,NEW.PW_SOURCE_YEAR,NEW.PW_SOURCE_OTHER,
+NEW.WAGE_RATE_OF_PAY_FROM,NEW.WAGE_RATE_OF_PAY_TO, NEW.WAGE_UNIT_OF_PAY,NEW.H1B_DEPENDENT,NEW.WILLFUL_VIOLATOR,
+NEW.SUPPORT_H1B,NEW.LABOR_CON_AGREE,NEW.PUBLIC_DISCLOSURE_LOCATION,NEW.WORKSITE_CITY,NEW.WORKSITE_COUNTY,NEW.WORKSITE_STATE,
+NEW.WORKSITE_POSTAL_CODE,NEW.ORIGINAL_CERT_DATE);
+
+END //
+
+DELIMITER ;
+
+
+/*change_before_update trigger ensures employer address cannot be updated by user to null
+This is the only data field that is chosen for not null as it is the only primary key that we allow
+the user to update*/
+DROP TRIGGER IF EXISTS change_before_update;
+DELIMITER //
+
+CREATE TRIGGER change_before_update
+BEFORE UPDATE 
+ON mega_table
+FOR EACH ROW
+BEGIN 
+   
+   IF NEW.EMPLOYER_ADDRESS IS NULL OR NEW.EMPLOYER_ADDRESS= ""
+   THEN SIGNAL SQLSTATE '22003'
+   SET MESSAGE_TEXT = 'EMPLOYER_ADDRESS cannot be empty',
+   MYSQL_ERRNO = 1264;
+   END IF;
+   
+
+END //
+
+DELIMITER ;
+
+
+/*case_counts_per_state view returns percentages of h1b cases per state in a tabular form
+Note that null values and irregular data was ommitted from results*/
+DROP VIEW IF EXISTS case_counts_per_state;
+CREATE VIEW case_counts_per_state AS
+SELECT EMPLOYER_STATE, ( count(CASE_NUMBER)/MAX(CASE_ID) * 100)  AS Percentage
+FROM mega_table
+WHERE EMPLOYER_STATE !="" AND EMPLOYER_STATE != "32501"
+GROUP BY EMPLOYER_STATE
+ORDER BY Percentage DESC;
+
+/*case_counts_per_case_status view returns percentages of h1b cases per each cateorgy of case status*/
+DROP VIEW IF EXISTS case_counts_per_case_status;
+CREATE VIEW case_counts_per_case_status AS
+SELECT CASE_STATUS, ( (count(CASE_NUMBER))/MAX(CASE_ID) * 100)  AS Percentage
+FROM mega_table
+GROUP BY CASE_STATUS
+ORDER BY Percentage DESC;
+
+/*case_counts_per_agent_representing_employer view returns percentages of h1b cases that had agents representing employers
+and those who didnt. Note that null values were ommitted from results*/
+DROP VIEW IF EXISTS case_counts_per_agent_representing_employer;
+CREATE VIEW case_counts_per_agent_representing_employer AS
+SELECT AGENT_REPRESENTING_EMPLOYER, ( (count(CASE_NUMBER))/MAX(CASE_ID) * 100)  AS Percentage
+FROM mega_table
+WHERE AGENT_REPRESENTING_EMPLOYER ="Y" OR AGENT_REPRESENTING_EMPLOYER = "N"
+GROUP BY AGENT_REPRESENTING_EMPLOYER
+ORDER BY Percentage DESC;
+
+
+

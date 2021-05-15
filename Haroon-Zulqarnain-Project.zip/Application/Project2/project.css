@@ -1,0 +1,94 @@
+body{
+padding-left: 200px;
+border-left-color:solid red;
+background-color: white;
+background-image: url("../Project2/H1-B-visa.jpeg") ;
+opacity: 4.0;
+  background-size: 1500px 700px;
+}
+
+div#navbar {
+ height: 50px;
+ width: 1000px;
+ background-color:yellow;
+  border: 1px solid red;
+ background-repeat:repeat-x;
+ 
+}
+
+div#navbar ul {
+	line-height: 40px;	
+	font-size: 24px;
+	margin: 0px;
+ 	padding: 0px;
+}
+
+div#navbar li {
+ list-style-type: none;
+ display: inline;
+ padding-right: 15px;
+}
+
+div#navbar li a {
+ text-decoration: none;
+}
+
+div#navbar li a:hover{
+ color: red;
+ border-bottom: dashed 1px;
+}
+
+label {
+  display: block;
+  margin: 5px 0;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+td, th {
+  padding: 5px 30px 5px 30px;
+  border-bottom: 1px solid #aaa;
+}
+
+h1{
+	color:red;
+}
+
+
+h3{
+	color:blue;
+
+}
+
+footer{
+	width:600px;
+	border-top: dotted 1px;
+}
+
+p{
+	width: 600px;
+	font-size: 40;
+}
+
+div#sidenav {
+  height: 100%;
+  width: 200px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #F5F5F5;
+  overflow-x: hidden;
+  padding-top: 10px;
+
+
+}
+
+/* Page content */
+div#main {
+  margin-left: 200px; /* Same as the width of the sidenav */
+}
+
